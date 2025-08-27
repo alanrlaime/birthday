@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>🎀 Feliz Cumpleaños (Animación)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <style>
+    :root{
+      --pink-1: #ffb6c1;
+      --pink-2: #ff69b4;
+      --dark: #2c2c2c;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--pink-1), var(--pink-2), var(--dark));
+      overflow: hidden;
+      font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+      color: white;
+      transition: background 1s ease;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Frases / pantallas */
+    .screen {
+      position: absolute;
+      top: 28vh;
+      left: 6%;
+      transform: translateX(-50%);
+      width: 90%;
+      text-align: center;
+      font-size: clamp(20px, 4vw, 48px);
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      line-height: 1.1;
+    }
+
+    /* SVG "kitty" (inline para no depender de recursos externos) */
+    .hello-kitty {
+      position: absolute;
+      bottom: 28vh;
+      left: 37%;
+      transform: translateX(-50%);
+      max-width: 38vw;
+      opacity: 0;
+      transition: transform .25s ease;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+    }
+
+    /* Flores (emojis) */
+    .flower {
+      position: absolute;
+      width: clamp(26px, 6vw, 60px);
+      opacity: 0.9;
+      user-select: none;
+      transform-origin: center;
+    }
+
+    /* Barra de progreso y canica */
+    .progress-container {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      height: 14px;
+      background: rgba(0,0,0,0.45);
+      border-radius: 9px;
+      overflow: visible;
+    }
+    .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, pink, hotpink, purple);
+      border-radius: 9px;
+    }
+    .progress-knob {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%,-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-knob:active { transform: translate(-50%,-50%) scale(0.98); }
+
+    /* Controles: botón arriba de barra */
+    .controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(12px + 14px + 12px); /* encima de la barra */
+      display: flex;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    .btn {
+      background: rgba(255,182,193,0.96);
+      border: none;
+      color: #111;
+      padding: 10px 16px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+      transition: transform .12s ease, background .12s ease;
+    }
+    .btn:active { transform: translateY(1px) scale(.995) }
+    .btn.hover { background: hotpink; color:white; }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px){
+      .hello-kitty { left: 27%; max-width: 240px; bottom: 30vh; }
+      .screen { top: 34vh; font-size: clamp(16px, 6vw, 32px); }
+      .progress-knob { width: 28px; height: 28px; }
+      .progress-container { height: 16px; bottom: 10px; left: 8px; right: 8px; }
+      .controls { bottom: calc(10px + 16px + 10px); }
+    }
+
+    /* Small polish so the knob shows a little ring on focus */
+    .progress-knob:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,182,193,0.35); }
+  </style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="Animación de feliz cumpleaños">
+    <!-- Frases -->
+    <div class="screen">🎉 ¡Feliz Cumpleaños! 🎉</div>
+    <div class="screen">🌸 Que tu día esté lleno de flores 🌸</div>
+    <div class="screen">💖 Con cariño y ternura estilo kawaii 💖</div>
+    <div class="screen">✨ Disfruta cada instante con alegría ✨</div>
+
+    <img class="hello-kitty" src="https://png.pngtree.com/png-vector/20230824/ourmid/pngtree-hello-kitty-in-a-birthday-cake-vector-png-image_6928309.png" alt="hello-kitty">
+
+    <!-- Flores -->
+    <div class="flower" style="top:6%; left:6%;">🌸</div>
+    <div class="flower" style="top:14%; right:10%;">🌺</div>
+    <div class="flower" style="bottom:32%; left:14%;">🌷</div>
+    <div class="flower" style="bottom:28%; right:22%;">🌹</div>
+
+    <!-- Controles (encima) -->
+    <div class="controls">
+      <button class="btn" id="playPauseBtn" aria-pressed="false">⏸ Pausar</button>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="progress-container" id="progressContainer" aria-label="Barra de progreso">
+      <div class="progress-bar" id="progressBar"></div>
+      <button class="progress-knob" id="progressKnob" aria-label="Controlar reproducción" title="Arrastra para adelantar/retrasar" tabindex="0"></button>
+    </div>
+  </div>
+
+  <script>
+    // Elementos
+    const screens = Array.from(document.querySelectorAll(".screen"));
+    const bar = document.getElementById("progressBar");
+    const knob = document.getElementById("progressKnob");
+    const container = document.getElementById("progressContainer");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+
+    // Fondos para cada frase (cambian en cada sección)
+    const backgrounds = [
+      "linear-gradient(to right, #c0392b, #8e44ad)",
+      "linear-gradient(to right, #0f0c29, #302b63, #24243e)",
+      "linear-gradient(to right, #200122, #6f0000)",
+      "linear-gradient(to right, #3a6186, #89253e)"
+    ];
+
+    // Efectos distintos por frase
+    const effects = [
+      { opacity: [0,1], scale: [0.6,1], translateY: 0 },
+      { opacity: [0,1], translateY: [-80,0] },
+      { opacity: [0,1], translateX: [120,0], rotate: "6deg" },
+      { opacity: [0,1], translateY: [80,0], scale: [1.4,1] }
+    ];
+
+    // Timeline principal (con todas las animaciones de pantalla)
+    const timeline = anime.timeline({ autoplay: false });
+
+    screens.forEach((s, i) => {
+      // entrada
+      timeline.add({
+        targets: s,
+        ...effects[i],
+        duration: 1400,
+        easing: "easeOutElastic(1, .8)",
+        begin: () => {
+          // asegurar solo la actual visible
+          screens.forEach((x, j) => { if (j !== i) x.style.opacity = 0; });
+          // cambiar fondo
+          document.body.style.background = backgrounds[i];
+        }
+      })
+      // mantener y salida
+      .add({
+        targets: s,
+        opacity: [1,0],
+        duration: 900,
+        easing: "easeInOutQuad",
+        delay: 1400
+      });
+    });
+
+    // Animación extra (hello-kitty) apareciendo desde inicio, en paralelo
+    timeline.add({
+      targets: '.hello-kitty',
+      opacity: [0,1],
+      scale: [0.5,1],
+      duration: 1200,
+      easing: "easeOutBack"
+    }, 0);
+
+    // Animación de las flores (loop independiente)
+    anime({
+      targets: ".flower",
+      translateY: [
+        { value: -22, duration: 2000 },
+        { value: 0, duration: 2000 }
+      ],
+      loop: true,
+      direction: "alternate",
+      easing: "easeInOutSine",
+      delay: anime.stagger(420)
+    });
+
+    // --- sincronización robusta con requestAnimationFrame ---
+    let totalDuration = timeline.duration; // tiempo total del timeline en ms (calculado por anime.js)
+    if (!totalDuration || totalDuration <= 0) totalDuration = 20000; // fallback seguro
+
+    let currentTime = 0;      // ms
+    let playing = true;
+    let rafId = null;
+    let lastTimestamp = null;
+    let dragging = false;
+    let wasPlayingBeforeDrag = false;
+
+    // render de barra y canica (porcentual para que sea responsive)
+    function renderProgress(){
+      const progress = Math.max(0, Math.min(1, totalDuration ? currentTime / totalDuration : 0));
+      bar.style.width = (progress * 100) + "%";
+      knob.style.left = (progress * 100) + "%";
+    }
+
+    // loop con RAF que avanza currentTime cuando está reproduciendo
+    function startLoop(){
+      if (rafId) return;
+      lastTimestamp = null;
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function stopLoop(){
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      lastTimestamp = null;
+    }
+
+    function loop(timestamp){
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      if (playing && !dragging) {
+        currentTime += delta;
+        if (currentTime >= totalDuration) {
+          currentTime = 0;
+          timeline.seek(0); // forzar al final
+          renderProgress();
+        }
+        // sincronizar el timeline a nuestro tiempo
+        timeline.seek(currentTime);
+        renderProgress();
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+
+    // play / pause
+    function play(){
+      if (currentTime >= totalDuration) { currentTime = 0; timeline.seek(0); } // opcional: reinicia si ya terminó
+      playing = true;
+      playPauseBtn.textContent = "⏸ Pausar";
+      playPauseBtn.setAttribute("aria-pressed","true");
+      startLoop();
+    }
+    function pause(){
+      playing = false;
+      playPauseBtn.textContent = "▶ Reproducir";
+      playPauseBtn.setAttribute("aria-pressed","false");
+      // not stopping RAF so UI still responsive (we can keep RAF running or stop it)
+      // preferir mantener RAF para evitar problemas en mobile; no cancelamos aquí.
+    }
+
+    // inicializar (seek 0)
+    timeline.seek(0);
+    currentTime = 0;
+    renderProgress();
+
+    // controlar botón
+    playPauseBtn.addEventListener("click", () => {
+      if (playing) pause(); else play();
+    });
+
+    // --- Scrubbing / arrastre de la canica (Pointer Events, funciona en móvil y escritorio) ---
+    knob.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      knob.setPointerCapture(ev.pointerId);
+      dragging = true;
+      wasPlayingBeforeDrag = playing;
+      pause(); // pausamos mientras se arrastra
+      // handle position immediately
+      handlePointerMove(ev);
+    });
+
+    document.addEventListener('pointermove', (ev) => {
+      if (!dragging) return;
+      handlePointerMove(ev);
+    });
+
+    document.addEventListener('pointerup', (ev) => {
+      if (!dragging) return;
+      dragging = false;
+      try { knob.releasePointerCapture(ev.pointerId); } catch(e){}
+      // si antes estaba reproduciendo, volvemos a reproducir
+      if (wasPlayingBeforeDrag) play();
+    });
+
+    // también permitir scrubbing haciendo click en barra
+    container.addEventListener('click', (ev) => {
+      const rect = container.getBoundingClientRect();
+      const x = ev.clientX - rect.left;
+      const progress = Math.max(0, Math.min(1, x / rect.width));
+      currentTime = progress * totalDuration;
+      timeline.seek(currentTime);
+      renderProgress();
+    });
+
+    function handlePointerMove(ev){
+      const rect = container.getBoundingClientRect();
+      let clientX;
+      if (ev.touches && ev.touches[0]) clientX = ev.touches[0].clientX;
+      else clientX = ev.clientX;
+      let x = clientX - rect.left;
+      x = Math.max(0, Math.min(rect.width, x));
+      const progress = x / rect.width;
+      currentTime = progress * totalDuration;
+      timeline.seek(currentTime);
+      renderProgress();
+    }
+
+    // resize -> recalcular posicion visual
+    window.addEventListener('resize', () => {
+      renderProgress();
+    });
+
+    // arrancar loop
+    startLoop();
+
+    // seguridad: si timeline cambia su duración por alguna razón, actualizamos totalDuration
+    // (esto raramente cambia, pero es una buena protección)
+    setTimeout(() => {
+      if (timeline.duration && timeline.duration > 0) {
+        totalDuration = timeline.duration;
+      }
+    }, 200);
+
+  </script>
+</body>
+</html>
